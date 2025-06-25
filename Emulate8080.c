@@ -39,7 +39,11 @@ int Emulate8080Op(State8080* state) {
 
 	switch(*opcode) {
 		case 0x00: break;
-		case 0x01: state->b = opcode[2] break;
+		case 0x01: 
+			   state->b = opcode[2];
+			   state->c = opcode[1];
+			   state->pc += 2;
+			   break;
 		case 0x02: UnimplementedInstruction(state); break;
 		case 0x03: UnimplementedInstruction(state); break;
 		case 0x04: UnimplementedInstruction(state); break;
@@ -310,5 +314,45 @@ int Emulate8080Op(State8080* state) {
 		case 0xfe: UnimplementedInstruction(state); break;
 		case 0xff: UnimplementedInstruction(state); break;
 	}
+	
+	return 0;
 }
+
+State8080* Init8080(void) {
+	State8080* state = calloc(1, sizeof(State8080)); // allocate memory for State8080 struct
+	state->memory = malloc(0x10000); // allocate 16k bytes for state memory
+	return state;
+}
+
+void ReadFileIntoMemoryAt(State8080* state, char* filename, uint32_t offset) {
+	FILE *f = fopen(filename, "rb");
+	if (f==NULL) {
+		printf("error: Couldn't open file %s\n", filename);
+		exit(1);
+	}
+	fseek(f, 0L, SEEK_END);
+	int fsize = ftell(f);
+	fseek(f, 0L, SEEK_SET);
+
+	uint8_t *buffer = &state->memory[offset];
+	fread(buffer, fsize, 1, f);
+	fclose(f);
+}
+
+int main(int argc, char**argv) {
+	int done = 0;
+	int vblankcycles = 0;
+	State8080* state = Init8080();
+
+	// reading in reverse order due to little endian
+	ReadFileIntoMemoryAt(state, "invaders.h", 0);
+	ReadFileIntoMemoryAt(state, "invaders.g", 0x800);
+	ReadFileIntoMemoryAt(state, "invaders.f", 0x1000);
+	ReadFileIntoMemoryAt(state, "invaders.e", 0x1800);
+
+	while (done == 0) {
+		done = Emulate8080p(state);
+	}
+
+	return 0;
 
