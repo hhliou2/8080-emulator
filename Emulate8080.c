@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 // Data structure for each condition code found in 8080
 typedef struct ConditionCodes {
@@ -38,6 +39,25 @@ void UnimplementedInstruction(State8080* state) {
 	exit(1);
 }
 
+// Flag functions
+uint8_t flag_z(int value) {
+	return value == 0;
+}
+uint8_t flag_s(int value) {
+	return (0x80== (value & 0x80));
+}
+uint8_t flag_p(int value, int size) {
+	int i;
+	int p = 0;
+	value = (value & ((1<<size)-1));
+	for (i=0; i<size; i++)
+	{
+		if (value & 0x1) p++;
+		value = value >> 1;
+	}
+	return !(0 == (p & 0x1));
+}
+
 // Emulate opcodes programatically
 int Emulate8080Op(State8080* state) {
 	unsigned char *opcode = &state->memory[state->pc];
@@ -55,7 +75,13 @@ int Emulate8080Op(State8080* state) {
 		case 0x02: UnimplementedInstruction(state); break;
 		case 0x03: UnimplementedInstruction(state); break;
 		case 0x04: UnimplementedInstruction(state); break;
-		case 0x05: UnimplementedInstruction(state); break;
+		case 0x05: 
+			   uint8_t res = state->b - 1;
+			   state->cc.z = flag_z(res);
+			   state->cc.s = flag_s(res);
+			   state->cc.p = flag_p(res, 8);
+			   state->b = state->b - 1;
+			   break;
 		case 0x06: 
 			   state->b = opcode[1];
 			   break;
@@ -76,7 +102,11 @@ int Emulate8080Op(State8080* state) {
 			   state->pc += 2;
 			   break;
 		case 0x12: UnimplementedInstruction(state); break;
-		case 0x13: UnimplementedInstruction(state); break;
+		case 0x13: 
+			   state->e++;
+			   if (state->e == 0)
+				   state->d++;
+			   break;
 		case 0x14: UnimplementedInstruction(state); break;
 		case 0x15: UnimplementedInstruction(state); break;
 		case 0x16: UnimplementedInstruction(state); break;
@@ -100,7 +130,11 @@ int Emulate8080Op(State8080* state) {
 			   state->pc += 2;
 			   break;
 		case 0x22: UnimplementedInstruction(state); break;
-		case 0x23: UnimplementedInstruction(state); break;
+		case 0x23: 
+			   state->l++;
+			   if (state->l == 0) 
+				   state->h++;
+			   break;
 		case 0x24: UnimplementedInstruction(state); break;
 		case 0x25: UnimplementedInstruction(state); break;
 		case 0x26: UnimplementedInstruction(state); break;
@@ -275,7 +309,12 @@ int Emulate8080Op(State8080* state) {
 
 		case 0xc0: UnimplementedInstruction(state); break;
 		case 0xc1: UnimplementedInstruction(state); break;
-		case 0xc2: UnimplementedInstruction(state); break;
+		case 0xc2: 
+			   if (0 == state->cc.z)
+				   state->pc = (opcode[2] << 8) | opcode[1];
+			   else
+				   state->pc = state->pc + 2;
+			   break;
 		case 0xc3: 
 			   state->pc = (opcode[2] << 8) | opcode[1]; //reconstructs address little endian format
 			   break;
@@ -284,7 +323,10 @@ int Emulate8080Op(State8080* state) {
 		case 0xc6: UnimplementedInstruction(state); break;
 		case 0xc7: UnimplementedInstruction(state); break;
 		case 0xc8: UnimplementedInstruction(state); break;
-		case 0xc9: UnimplementedInstruction(state); break;
+		case 0xc9: 
+			   state->pc = state->memory[state->sp] | (state->memory[state->sp+1] << 8);
+			   state->sp += 2;
+			   break;
 		case 0xca: UnimplementedInstruction(state); break;
 		case 0xcb: UnimplementedInstruction(state); break;
 		case 0xcc: UnimplementedInstruction(state); break;
