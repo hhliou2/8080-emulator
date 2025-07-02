@@ -272,7 +272,18 @@ int Emulate8080Op(State8080* state) {
 		case 0xca: UnimplementedInstruction(state); break;
 		case 0xcb: UnimplementedInstruction(state); break;
 		case 0xcc: UnimplementedInstruction(state); break;
-		case 0xcd: UnimplementedInstruction(state); break;
+		case 0xcd: 
+			   // store current location to memory stack before starting subroutine
+			   uint16_t ret = state->pc + 2;
+			   state->memory[state->sp - 1] = (ret >> 8) & 0xff; //0xff ensures only 8 byte storage (no garbage from shift)
+			   state->memory[state->sp - 2] = ret & 0xff;
+			   
+			   // shift SP down
+			   state->sp = state->sp - 2;
+
+			   // Set PC to address in provided bytes
+			   state->pc = (opcode[2] << 8) | opcode[1];
+			   break;
 		case 0xce: UnimplementedInstruction(state); break;
 		case 0xcf: UnimplementedInstruction(state); break;
 
@@ -340,7 +351,10 @@ int Emulate8080Op(State8080* state) {
 	printf("State: \n");
 	printf("A $%02x B $%02x C $%02x D $%02x E $%02x H $%02x L $%02x SP %04x\n", state->a, state->b, state->c,
 				state->d, state->e, state->h, state->l, state->sp);
-	printf("\n");
+
+	printf("PC: \n");
+	printf("%02x", state->pc);
+	printf("\n\n");
 	return 0;
 }
 
