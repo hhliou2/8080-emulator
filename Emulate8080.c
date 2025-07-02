@@ -1,6 +1,5 @@
 #include "Emulate8080.h"
-
-#define DEBUG 0
+#include "Disassemble.h"
 
 // Error call for opcode
 void UnimplementedInstruction(State8080* state) {
@@ -30,11 +29,23 @@ uint8_t flag_p(int value) {
 	return (0 == (p & 0x1));
 }
 
+// Space invaders RAM must be between 0x2000 and 0x4000
+static void WriteMem(State8080* state, uint16_t address, uint8_t value) {
+	if (address >= 0x2000 && address <= 0x4000) {
+		state->memory[address] = value;
+	}
+}
+
 // Emulate opcodes programatically
 int Emulate8080Op(State8080* state) {
 	unsigned char *opcode = &state->memory[state->pc];
 
 	state->pc+=1;
+
+	// Print opcode definition if debug on
+	#ifdef DEBUG
+	Disassemble8080Op(state->memory, state->pc);
+	#endif	
 
 	switch(*opcode) {
 		case 0x00: break;
