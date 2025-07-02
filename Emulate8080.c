@@ -55,7 +55,8 @@ int Emulate8080Op(State8080* state) {
 		case 0x03: UnimplementedInstruction(state); break;
 		case 0x04: UnimplementedInstruction(state); break;
 		case 0x05: UnimplementedInstruction(state); break;
-		case 0x06: UnimplementedInstruction(state); break;
+		case 0x06: 
+			   break;
 		case 0x07: UnimplementedInstruction(state); break;
 		case 0x08: UnimplementedInstruction(state); break;
 		case 0x09: UnimplementedInstruction(state); break;
@@ -101,7 +102,10 @@ int Emulate8080Op(State8080* state) {
 		case 0x2f: UnimplementedInstruction(state); break;
 
 		case 0x30: UnimplementedInstruction(state); break;
-		case 0x31: UnimplementedInstruction(state); break;
+		case 0x31: 
+			   state->sp = (opcode[2] << 8) | opcode[1];
+			   state->pc+=2;
+			   break;
 		case 0x32: UnimplementedInstruction(state); break;
 		case 0x33: UnimplementedInstruction(state); break;
 		case 0x34: UnimplementedInstruction(state); break;
@@ -256,7 +260,9 @@ int Emulate8080Op(State8080* state) {
 		case 0xc0: UnimplementedInstruction(state); break;
 		case 0xc1: UnimplementedInstruction(state); break;
 		case 0xc2: UnimplementedInstruction(state); break;
-		case 0xc3: UnimplementedInstruction(state); break;
+		case 0xc3: 
+			   state->pc = (opcode[2] << 8) | opcode[1]; //reconstructs address little endian format
+			   break;
 		case 0xc4: UnimplementedInstruction(state); break;
 		case 0xc5: UnimplementedInstruction(state); break;
 		case 0xc6: UnimplementedInstruction(state); break;
@@ -321,7 +327,20 @@ int Emulate8080Op(State8080* state) {
 		case 0xfe: UnimplementedInstruction(state); break;
 		case 0xff: UnimplementedInstruction(state); break;
 	}
+
+	// Print current state for debugging
+	printf("Flags: \n");
+	printf("%c", state->cc.z ? 'z' : '.');
+	printf("%c", state->cc.s ? 's' : '.');
+	printf("%c", state->cc.p ? 'p' : '.');
+	printf("%c", state->cc.cy ? 'c' : '.');
+	printf("%c  ", state->cc.ac ? 'a' : '.');
 	
+	printf("\n");
+	printf("State: \n");
+	printf("A $%02x B $%02x C $%02x D $%02x E $%02x H $%02x L $%02x SP %04x\n", state->a, state->b, state->c,
+				state->d, state->e, state->h, state->l, state->sp);
+	printf("\n");
 	return 0;
 }
 
