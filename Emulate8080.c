@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 // Data structure for each condition code found in 8080
 typedef struct ConditionCodes {
@@ -23,19 +25,24 @@ typedef struct State8080 {
 	uint16_t	sp;
 	uint16_t	pc;
 	uint8_t	*memory;
-	uint8_t	ConditonCodes	cc;
+	struct	ConditionCodes cc;
 	uint8_t	int_enable;
 } State8080;
 
 // Error call for opcode
 void UnimplementedInstruction(State8080* state) {
 	printf("Error: Unimplemented instruction\n");
+	state->pc--; //go to previous program counter
+	printf("Opcode of error: %02x", state->memory[state->pc]);
+	printf("\n");
 	exit(1);
 }
 
 // Emulate opcodes programatically
 int Emulate8080Op(State8080* state) {
 	unsigned char *opcode = &state->memory[state->pc];
+
+	state->pc+=1;
 
 	switch(*opcode) {
 		case 0x00: break;
@@ -340,6 +347,7 @@ void ReadFileIntoMemoryAt(State8080* state, char* filename, uint32_t offset) {
 }
 
 int main(int argc, char**argv) {
+
 	int done = 0;
 	int vblankcycles = 0;
 	State8080* state = Init8080();
@@ -351,8 +359,8 @@ int main(int argc, char**argv) {
 	ReadFileIntoMemoryAt(state, "invaders.e", 0x1800);
 
 	while (done == 0) {
-		done = Emulate8080p(state);
+		done = Emulate8080Op(state);
 	}
 
 	return 0;
-
+}
