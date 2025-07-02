@@ -228,7 +228,7 @@ int Emulate8080Op(State8080* state) {
 		case 0x6c: UnimplementedInstruction(state); break;
 		case 0x6d: UnimplementedInstruction(state); break;
 		case 0x6e: UnimplementedInstruction(state); break;
-		case 0x6f: UnimplementedInstruction(state); break;
+		case 0x6f: state->l = state->a;	break;
 
 		case 0x70: UnimplementedInstruction(state); break;
 		case 0x71: UnimplementedInstruction(state); break;
@@ -424,21 +424,20 @@ int Emulate8080Op(State8080* state) {
 	}
 
 	// Print current state for debugging
-	printf("Flags: \n");
+	
+	printf("State: ");
+	printf("A $%02x B $%02x C $%02x D $%02x E $%02x H $%02x L $%02x SP %04x ", state->a, state->b, state->c,
+				state->d, state->e, state->h, state->l, state->sp);
+	printf("PC: ");
+	printf("%02x ", state->pc);
+	printf("Flags: ");
 	printf("%c", state->cc.z ? 'z' : '.');
 	printf("%c", state->cc.s ? 's' : '.');
 	printf("%c", state->cc.p ? 'p' : '.');
 	printf("%c", state->cc.cy ? 'c' : '.');
 	printf("%c  ", state->cc.ac ? 'a' : '.');
-	
-	printf("\n");
-	printf("State: \n");
-	printf("A $%02x B $%02x C $%02x D $%02x E $%02x H $%02x L $%02x SP %04x\n", state->a, state->b, state->c,
-				state->d, state->e, state->h, state->l, state->sp);
 
-	printf("PC: \n");
-	printf("%02x", state->pc);
-	printf("\n\n");
+	printf("\n");
 	return 0;
 }
 
