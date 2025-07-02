@@ -18,7 +18,7 @@ uint8_t flag_z(int value) {
 uint8_t flag_s(int value) {
 	return (0x80== (value & 0x80));
 }
-uint8_t flag_p(int value, int size) {
+uint8_t flag_p(int value) {
 	int i;
 	int p = 0;
 	value = (value & ((1<<size)-1));
@@ -51,7 +51,7 @@ int Emulate8080Op(State8080* state) {
 			   uint8_t res8 = state->b - 1;
 			   state->cc.z = flag_z(res8);
 			   state->cc.s = flag_s(res8);
-			   state->cc.p = flag_p(res8, 8);
+			   state->cc.p = flag_p(res8);
 			   state->b = state->b - 1;
 			   break;
 			   }
@@ -79,7 +79,7 @@ int Emulate8080Op(State8080* state) {
 			   uint8_t res8 = state->c - 1;
 			   state->cc.z = flag_z(res8);
 			   state->cc.s = flag_s(res8);
-			   state->cc.p = flag_p(res8, 8);
+			   state->cc.p = flag_p(res8);
 			   state->c = state->c - 1;
 			   break;
 			   }
@@ -347,7 +347,7 @@ int Emulate8080Op(State8080* state) {
 			   state->cc.cy = state->cc.ac = 0;
 			   state->cc.z = flag_z(state->a);
 			   state->cc.s = flag_s(state->a);
-			   state->cc.p = flag_p(state->a, 8);
+			   state->cc.p = flag_p(state->a);
 			   break;
 		case 0xa8: UnimplementedInstruction(state); break;
 		case 0xa9: UnimplementedInstruction(state); break;
@@ -361,7 +361,7 @@ int Emulate8080Op(State8080* state) {
 			   state->cc.cy = state->cc.ac = 0;
 			   state->cc.z = flag_z(state->a);
 			   state->cc.s = flag_s(state->a);
-			   state->cc.p = flag_p(state->a, 8);
+			   state->cc.p = flag_p(state->a);
 			   break;
 
 		case 0xb0: UnimplementedInstruction(state); break;
@@ -407,7 +407,7 @@ int Emulate8080Op(State8080* state) {
 			   uint16_t x = (uint16_t) state->a + (uint16_t) opcode[1];
 			   state->cc.z = flag_z(x);
 			   state->cc.s = flag_s(x);
-			   state->cc.p = flag_p(x&0xff, 8);
+			   state->cc.p = flag_p(x&0xff);
 			   state->cc.cy = (x > 0xff);
 			   state->a = (uint8_t) x;
 			   state->pc++;
@@ -483,7 +483,7 @@ int Emulate8080Op(State8080* state) {
 			   state->cc.cy = state->cc.ac = 0;
 			   state->cc.z = flag_z(state->a);
 			   state->cc.s = flag_s(state->a);
-			   state->cc.p = flag_p(state->a, 8);
+			   state->cc.p = flag_p(state->a);
 			   state->pc++;
 			   break;
 		case 0xe7: UnimplementedInstruction(state); break;
@@ -544,7 +544,7 @@ int Emulate8080Op(State8080* state) {
 			   uint8_t x = state->a - opcode[1]; 
 			   state->cc.z = flag_z(x);
 			   state->cc.s = flag_s(x);
-			   state->cc.p = flag_p(x, 8);
+			   state->cc.p = flag_p(x);
 			   state->cc.cy = (state->a < opcode[1]);
 			   state->pc++;
 			   break;

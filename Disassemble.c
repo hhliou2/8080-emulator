@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "Disassemble.h"
 
 /*
  * Converts the ROM (hex/binary) into the Op codes for the 8080
@@ -303,9 +302,7 @@ int Disassemble8080Op(unsigned char *codebuffer, int pc) {
 		case 0xfe: printf("CPI	#$%02x", code[1]); opbytes=2; break;
 		case 0xff: printf("RST	7"); break;
 	}
-
-	printf("\n");
-
+	printf(" ");
 	return opbytes;
 }
 
