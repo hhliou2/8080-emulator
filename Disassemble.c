@@ -306,7 +306,7 @@ int Disassemble8080Op(unsigned char *codebuffer, int pc) {
 	return opbytes;
 }
 
-/* Main function */
+/* Main function 
 int main (int argc, char**argv) {
 	FILE *f = fopen(argv[1], "rb");
 	if (f==NULL) {
@@ -330,3 +330,4 @@ int main (int argc, char**argv) {
 
 	return 0;
 }
+*/

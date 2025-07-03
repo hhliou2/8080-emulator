@@ -18,23 +18,42 @@ uint8_t flag_s(int value) {
 	return (0x80== (value & 0x80));
 }
 uint8_t flag_p(int value) {
-	int i;
-	int p = 0;
-	value = (value & ((1<<size)-1));
-	for (i=0; i<size; i++)
-	{
-		if (value & 0x1) p++;
-		value = value >> 1;
-	}
-	return (0 == (p & 0x1));
+    	value ^= value >> 4;
+    	value ^= value >> 2;
+    	value ^= value >> 1;
+    	return value & 1;
 }
 
 // Space invaders RAM must be between 0x2000 and 0x4000
-static void WriteMem(State8080* state, uint16_t address, uint8_t value) {
+static void writeMem(State8080* state, uint16_t address, uint8_t value) {
 	if (address >= 0x2000 && address <= 0x4000) {
 		state->memory[address] = value;
 	}
 }
+
+// Common functions
+static uint8_t readHL(State8080* state) {
+	uint16_t offset = (state->h << 8) | state->l;
+	return state->memory[offset];
+}
+
+static void writeHL(State8080* state, uint8_t value) {
+	uint16_t offset = (state->h << 8) | state->l;
+	writeMem(state, offset, value);
+}
+
+static void push(State8080* state, uint8_t high, uint8_t low) {
+	writeMem(state, state->sp-1, high); //going backwards due to little endian
+	writeMem(state, state->sp-2, low);
+	state->sp = state->sp-2;
+}
+
+static void pop(State8080* state, uint8_t *high, uint8_t *low) {
+	*high = state->memory[state->sp+1];
+	*low = state->memory[state->sp];
+	state->sp += 2;
+}
+
 
 // Emulate opcodes programatically
 int Emulate8080Op(State8080* state) {
@@ -59,10 +78,10 @@ int Emulate8080Op(State8080* state) {
 		case 0x04: UnimplementedInstruction(state); break;
 		case 0x05: 
 			   {
-			   uint8_t res8 = state->b - 1;
-			   state->cc.z = flag_z(res8);
-			   state->cc.s = flag_s(res8);
-			   state->cc.p = flag_p(res8);
+			   uint8_t res = state->b - 1;
+			   state->cc.z = flag_z(res);
+			   state->cc.s = flag_s(res);
+			   state->cc.p = flag_p(res);
 			   state->b = state->b - 1;
 			   break;
 			   }
@@ -185,8 +204,7 @@ int Emulate8080Op(State8080* state) {
 			   state->pc+=2;
 			   break;
 		case 0x32: 
-			   uint16_t offset = (opcode[2] << 8) | opcode[1];
-			   state->memory[offset] = state->a;
+			   writeMem(state, (opcode[2] << 8) | opcode[1], state->a);
 			   state->pc+=2;
 			   break;
 		case 0x33: UnimplementedInstruction(state); break;
@@ -194,8 +212,7 @@ int Emulate8080Op(State8080* state) {
 		case 0x35: UnimplementedInstruction(state); break;
 		case 0x36: 
 			   {
-			   uint16_t offset = (state->h<<8) | state->l;
-			   state->memory[offset] = opcode[1];
+			   writeHL(state, opcode[1]);
 			   state->pc++;
 			   break;
 			   }
@@ -243,12 +260,7 @@ int Emulate8080Op(State8080* state) {
 		case 0x53: UnimplementedInstruction(state); break;
 		case 0x54: UnimplementedInstruction(state); break;
 		case 0x55: UnimplementedInstruction(state); break;
-		case 0x56: 
-			   {
-			   uint16_t offset = (state->h << 8) | state->l;
-			   state->d = state->memory[offset];
-			   break;
-			   }
+		case 0x56: state->d = readHL(state); break;
 		case 0x57: UnimplementedInstruction(state); break;
 		case 0x58: UnimplementedInstruction(state); break;
 		case 0x59: UnimplementedInstruction(state); break;
@@ -256,12 +268,7 @@ int Emulate8080Op(State8080* state) {
 		case 0x5b: UnimplementedInstruction(state); break;
 		case 0x5c: UnimplementedInstruction(state); break;
 		case 0x5d: UnimplementedInstruction(state); break;
-		case 0x5e: 
-			   {
-			   uint16_t offset = (state->h << 8) | state->l;
-			   state->e = state->memory[offset];
-			   break;
-			   }
+		case 0x5e: state->e = readHL(state); break;
 		case 0x5f: UnimplementedInstruction(state); break;
 
 		case 0x60: UnimplementedInstruction(state); break;
@@ -270,12 +277,7 @@ int Emulate8080Op(State8080* state) {
 		case 0x63: UnimplementedInstruction(state); break;
 		case 0x64: UnimplementedInstruction(state); break;
 		case 0x65: UnimplementedInstruction(state); break;
-		case 0x66: 
-			   {
-			   uint16_t offset = (state->h << 8) | state->l;
-			   state->h = state->memory[offset];
-			   break;
-			   }
+		case 0x66: state->h = readHL(state); break;
 		case 0x67: UnimplementedInstruction(state); break;
 		case 0x68: UnimplementedInstruction(state); break;
 		case 0x69: UnimplementedInstruction(state); break;
@@ -293,24 +295,14 @@ int Emulate8080Op(State8080* state) {
 		case 0x74: UnimplementedInstruction(state); break;
 		case 0x75: UnimplementedInstruction(state); break;
 		case 0x76: UnimplementedInstruction(state); break;
-		case 0x77: 
-			   {
-			   uint16_t offset = (state->h<<8) | (state->l);
-			   state->memory[offset] = state->a;
-			   break;
-			   }
+		case 0x77: writeHL(state, state->a); break;
 		case 0x78: UnimplementedInstruction(state); break;
 		case 0x79: UnimplementedInstruction(state); break;
 		case 0x7a: state->a = state->d;	break;
 		case 0x7b: state->a = state->e; break;
 		case 0x7c: state->a = state->h;	break;
 		case 0x7d: UnimplementedInstruction(state); break;
-		case 0x7e: 
-			   {
-			   uint16_t offset = (state->h << 8) | state->l;
-			   state->a = state->memory[offset];
-			   break;
-			   }
+		case 0x7e: state->a = readHL(state); break;
 		case 0x7f: UnimplementedInstruction(state); break;
 
 		case 0x80: UnimplementedInstruction(state); break;
@@ -394,9 +386,7 @@ int Emulate8080Op(State8080* state) {
 
 		case 0xc0: UnimplementedInstruction(state); break;
 		case 0xc1: 
-			   state->c = state->memory[state->sp];
-			   state->b = state->memory[state->sp+1];
-			   state->sp = state->sp+2;
+			   pop(state, &state->b, &state->c);
 			   break;
 		case 0xc2: 
 			   if (0 == state->cc.z)
@@ -409,9 +399,7 @@ int Emulate8080Op(State8080* state) {
 			   break;
 		case 0xc4: UnimplementedInstruction(state); break;
 		case 0xc5: 
-			   state->memory[state->sp-2] = state->c;
-			   state->memory[state->sp-1] = state->b;
-			   state->sp = state->sp - 2;
+			   push(state, state->b, state->c);
 			   break;
 		case 0xc6: 
 			   {
@@ -437,8 +425,8 @@ int Emulate8080Op(State8080* state) {
 			   {
 			   // store current location to memory stack before starting subroutine
 			   uint16_t ret = state->pc + 2;
-			   state->memory[state->sp - 1] = (ret >> 8) & 0xff; //0xff ensures only 8 byte storage (no garbage from shift)
-			   state->memory[state->sp - 2] = (ret & 0xff);
+			   writeMem(state, state->sp - 1, (ret >> 8) & 0xff); //0xff ensures only 8 byte storage (no garbage from shift)
+			   writeMem(state, state->sp - 2, ret & 0xff);
 			   
 			   // shift SP down
 			   state->sp = state->sp - 2;
@@ -452,17 +440,13 @@ int Emulate8080Op(State8080* state) {
 
 		case 0xd0: UnimplementedInstruction(state); break;
 		case 0xd1: 
-			   state->e = state->memory[state->sp];
-			   state->d = state->memory[state->sp+1];
-			   state->sp = state->sp+2;
+			   pop(state, &state->d, &state->e);
 			   break;
 		case 0xd2: UnimplementedInstruction(state); break;
 		case 0xd3: state->pc++;	break; //special??
 		case 0xd4: UnimplementedInstruction(state); break;
 		case 0xd5: 
-			   state->memory[state->sp-2] = state->e;
-			   state->memory[state->sp-1] = state->d;
-			   state->sp = state->sp-2;
+			   push(state, state->d, state->e);
 			   break;
 		case 0xd6: UnimplementedInstruction(state); break;
 		case 0xd7: UnimplementedInstruction(state); break;
@@ -477,17 +461,13 @@ int Emulate8080Op(State8080* state) {
 
 		case 0xe0: UnimplementedInstruction(state); break;
 		case 0xe1: 
-			   state->l = state->memory[state->sp];
-			   state->h = state->memory[state->sp+1];
-			   state->sp = state->sp + 2;
+			   pop(state, &state->h, &state->l);
 			   break;
 		case 0xe2: UnimplementedInstruction(state); break;
 		case 0xe3: UnimplementedInstruction(state); break;
 		case 0xe4: UnimplementedInstruction(state); break;
 		case 0xe5: 
-			   state->memory[state->sp-2] = state->l;
-			   state->memory[state->sp-1] = state->h;
-			   state->sp = state->sp-2;
+			   push(state, state->h, state->l);
 			   break;
 		case 0xe6: 
 			   state->a = state->a & opcode[1];
@@ -563,7 +543,7 @@ int Emulate8080Op(State8080* state) {
 	}
 
 	// Print current state for debugging
-	
+	#ifdef DEBUG
 	printf("State: ");
 	printf("A $%02x B $%02x C $%02x D $%02x E $%02x H $%02x L $%02x SP %04x ", state->a, state->b, state->c,
 				state->d, state->e, state->h, state->l, state->sp);
@@ -575,8 +555,9 @@ int Emulate8080Op(State8080* state) {
 	printf("%c", state->cc.p ? 'p' : '.');
 	printf("%c", state->cc.cy ? 'c' : '.');
 	printf("%c  ", state->cc.ac ? 'a' : '.');
-
 	printf("\n");
+	#endif
+
 	return 0;
 }
 
