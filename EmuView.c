@@ -1,8 +1,33 @@
-#include <SDL2/SDL.h>
-#include <stdbool.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <SDL2/SDL.h>
 
 int main() {
-	printf("Hello World");
+	SDL_Window* window = NULL;
+	SDL_Renderer* renderer = NULL;
+	SDL_Event e;
+	SDL_Init(SDL_INIT_VIDEO);
+	bool running = true;
+	SDL_Rect r = {10,10,250,250};
+
+	SDL_CreateWindowAndRenderer(640 * 2, 480 * 2, 0, &window, &renderer);
+	SDL_RenderSetScale(renderer, 2, 2);
+
+	while (running) {
+		while(SDL_PollEvent(&e)) {
+			if(e.type == SDL_QUIT)
+				running = false;
+		}
+
+		SDL_SetRenderDrawColor(renderer,0,0,0,255);
+		SDL_RenderClear(renderer);
+
+		SDL_SetRenderDrawColor(renderer,255,255,255,255);
+		SDL_RenderFillRect(renderer, &r);
+
+		SDL_RenderPresent(renderer);
+		SDL_Delay(10);
+	}
+
 	return 0;
 }
