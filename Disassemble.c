@@ -12,6 +12,7 @@ int Disassemble8080Op(unsigned char *codebuffer, int pc) {
 	unsigned char *code = &codebuffer[pc];
 	int opbytes = 1;
 	printf ("%04x ", pc); // Convert to hex, add leading 0s, make 4 digits.
+	printf ("%02x ", *code); 
 	switch (*code) {
 		case 0x00: printf("NOP"); break;
 		case 0x01: printf("LXI	B,#$%02x%02x", code[2], code[1]); opbytes=3; break;
