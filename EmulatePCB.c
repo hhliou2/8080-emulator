@@ -1,22 +1,7 @@
-#define _POSIX_C_SOURCE 199309L
-#include <time.h>
-#include <sys/time.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "Emulate8080.h"
+#include "EmulatePCB.h"
 
 const double MICROSECONDS_PER_FRAME = (double) 1e6/60.0;
 const double MICROSECONDS_PER_HALF_FRAME = (double) 1e6/120.0;
-
-typedef struct ExtInstructions {
-	double lastTimer;
-	double nextInterrupt;
-	double whichInterrupt;
-
-	uint8_t shift0;
-	uint8_t shift1;
-	uint8_t shift_offset;
-} ExtInstructions;
 
 void ReadFileIntoMemoryAt(State8080* state, char* filename, uint32_t offset) {
         FILE *f = fopen(filename, "rb");
@@ -123,6 +108,8 @@ void CPUIncrement(State8080* state, ExtInstructions* ins) {
 	ins->lastTimer = now;
 }
 
+/*
+
 int main(int argc, char**argv) {
 
         int done = 0;
@@ -138,4 +125,4 @@ int main(int argc, char**argv) {
         return 0;
 }
 
-
+*/

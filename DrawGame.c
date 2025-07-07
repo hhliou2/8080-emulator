@@ -10,8 +10,8 @@ int main() {
 	bool running = true;
 	SDL_Rect r = {10,10,250,250};
 
-	SDL_CreateWindowAndRenderer(640 * 2, 480 * 2, 0, &window, &renderer);
-	SDL_RenderSetScale(renderer, 2, 2);
+	SDL_CreateWindowAndRenderer(256 * 4, 224 * 4, 0, &window, &renderer); //Space invaders screen output is 256x244
+	SDL_RenderSetScale(renderer, 4, 4);
 
 	while (running) {
 		while(SDL_PollEvent(&e)) {
