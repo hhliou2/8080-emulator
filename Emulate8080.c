@@ -236,12 +236,12 @@ int Emulate8080Op(State8080* state) {
 		case 0x34: UnimplementedInstruction(state); break;
 		case 0x35: 
 			   {
-				   uint16_t offset = (state->h<<8) | state->l;
-				   state->memory[offset] = state->memory[offset-1];
+				   uint8_t res = readHL(state)-1;
 			   	   state->cc.cy = state->cc.ac = 0;
-				   state->cc.z = flag_z(state->memory[offset]);
-				   state->cc.s = flag_s(state->memory[offset]);
-				   state->cc.p = flag_p(state->memory[offset]);
+				   state->cc.z = flag_z(res);
+				   state->cc.s = flag_s(res);
+				   state->cc.p = flag_p(res);
+				   writeHL(state, res);
 			   }
 			   break;
 		case 0x36: 
@@ -585,7 +585,7 @@ int Emulate8080Op(State8080* state) {
 		case 0xf8: UnimplementedInstruction(state); break;
 		case 0xf9: UnimplementedInstruction(state); break;
 		case 0xfa: UnimplementedInstruction(state); break;
-		case 0xfb: state->int_enable = 1; break;
+		case 0xfb: state->int_enable = 1; printf("enabled\n"); break;
 		case 0xfc: UnimplementedInstruction(state); break;
 		case 0xfd: UnimplementedInstruction(state); break;
 		case 0xfe: 
@@ -628,6 +628,7 @@ void GenerateInterrupt(State8080* state, int interrupt_num) {
 	state -> pc = 8 * interrupt_num;
 
 	//DI
+	printf("interrupts disabled\n");
 	state->int_enable = 0;
 }
 

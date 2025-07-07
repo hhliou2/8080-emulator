@@ -37,6 +37,10 @@ ExtInstructions* InitExt(void) {
 	ins->nextInterrupt = 0.0;
 	ins->whichInterrupt = 1;
 
+	ins->shift0 = 0;
+	ins->shift1 = 0;
+	ins->shift_offset = 0;
+
 	return ins;
 }
 
@@ -51,7 +55,7 @@ uint8_t MachineIn(uint8_t port, struct ExtInstructions* ins) {
 	unsigned char a = 0;
 	switch(port) {
 		case 0:
-			return 1;
+			return 0x0e;
 		case 1:
 			return 0;
 		case 3:
@@ -83,7 +87,6 @@ void CPUIncrement(State8080* state, ExtInstructions* ins) {
 	double now = GetPreciseTimeMicroseconds();
 
 	if (ins->lastTimer == 0.0) {
-		printf("lastTimer  %f\n", ins->lastTimer);
 		ins->lastTimer = now;
 		ins->nextInterrupt = ins->lastTimer + MICROSECONDS_PER_FRAME;
 	}
@@ -106,7 +109,21 @@ void CPUIncrement(State8080* state, ExtInstructions* ins) {
 	int cycles = 0;
 
 	while (cycles < cycles_needed) {
-		cycles += Emulate8080Op(state);
+		unsigned char *op = &state->memory[state->pc];
+
+		if (*op == 0xdb) {
+		// Emulating machine IN
+			state->a = MachineIn(op[1], ins);
+			state->pc += 2;
+			cycles+=10;
+		} else if (*op == 0xd3) {
+		// Emulating machine OUT
+			MachineOut(op[1], state->a, ins);
+			state->pc += 2;
+			cycles+=10;
+		} else {
+			cycles += Emulate8080Op(state);
+		}
 	}
 
 	ins->lastTimer = now;
