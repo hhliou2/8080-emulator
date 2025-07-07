@@ -28,3 +28,6 @@ typedef struct State8080 {
 	struct	ConditionCodes cc;
 	uint8_t	int_enable;
 } State8080;
+
+int Emulate8080Op(State8080^ state);
+void Generate_Interrupt(State8080* state, int interrupt_num);

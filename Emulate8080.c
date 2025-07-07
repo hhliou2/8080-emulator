@@ -66,10 +66,6 @@ int Emulate8080Op(State8080* state) {
 
 	state->pc+=1;
 
-	// Print opcode definition if debug on
-	#ifdef DEBUG
-	#endif	
-
 	switch(*opcode) {
 		case 0x00: break;
 		case 0x01: 
@@ -565,6 +561,17 @@ int Emulate8080Op(State8080* state) {
 	#endif
 
 	return 0;
+}
+
+void GenerateInterrupt(State8080* state, int interrupt_num) {
+	// push current pc to stack for future return
+	push(state, (state->pc & 0xff00) >> 8, (state->pc & 0xff));
+
+	// set pc to ret call address
+	state -> pc = 8 * interrupt_num;
+
+	//DI
+	state->int_enable = 0;
 }
 
 State8080* Init8080(void) {
