@@ -31,10 +31,13 @@ State8080* InitMachine(void) {
         return state;
 }
 
-void InitExt(struct ExtInstructions* ins) {
+ExtInstructions* InitExt(void) {
+	struct ExtInstructions* ins = malloc(sizeof(ExtInstructions));
 	ins->lastTimer = 0.0;
 	ins->nextInterrupt = 0.0;
 	ins->whichInterrupt = 1;
+
+	return ins;
 }
 
 double GetPreciseTimeMicroseconds() {
@@ -80,7 +83,8 @@ void CPUIncrement(State8080* state, ExtInstructions* ins) {
 	double now = GetPreciseTimeMicroseconds();
 
 	if (ins->lastTimer == 0.0) {
-		ins->lastTimer == now;
+		printf("lastTimer  %f\n", ins->lastTimer);
+		ins->lastTimer = now;
 		ins->nextInterrupt = ins->lastTimer + MICROSECONDS_PER_FRAME;
 	}
 
@@ -108,18 +112,17 @@ void CPUIncrement(State8080* state, ExtInstructions* ins) {
 	ins->lastTimer = now;
 }
 
-/*
 
+/*
 int main(int argc, char**argv) {
 
         int done = 0;
-	struct ExtInstructions ins;
 
         State8080* state = InitMachine();
-	InitExt(&ins);
+	ExtInstructions* ins = InitExt();
 
         while (done == 0) {
-                CPUIncrement(state, &ins);
+                CPUIncrement(state, ins);
         }
 
         return 0;

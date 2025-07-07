@@ -1,4 +1,4 @@
-#define _POSIX_C_SOURCE 199309L
+// #define _POSIX_C_SOURCE 199309L
 #include <time.h>
 #include <sys/time.h>
 #include <stdio.h>
@@ -15,4 +15,6 @@ typedef struct ExtInstructions {
         uint8_t shift_offset;
 } ExtInstructions;
 
+State8080* InitMachine(void);
+ExtInstructions* InitExt(void);
 void CPUIncrement(State8080* state, ExtInstructions* ins);
