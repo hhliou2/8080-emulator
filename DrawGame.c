@@ -3,6 +3,13 @@
 #include <SDL2/SDL.h>
 #include "EmulatePCB.h"
 
+#define KEY_COIN 1
+#define KEY_LEFT 2
+#define KEY_RIGHT 3
+#define KEY_FIRE 4
+#define KEY_START 5
+#define KEY_PAUSE 6
+
 int main() {
 	ExtInstructions* ins = InitExt();
 	State8080* state = InitMachine();
@@ -22,8 +29,46 @@ int main() {
 
 		
 		while(SDL_PollEvent(&e)) {
-			if(e.type == SDL_QUIT)
-				running = false;
+			switch(e.type) {
+				case(SDL_QUIT):
+					running = false;
+					break;
+				case(SDL_KEYDOWN):
+					switch(e.key.keysym.sym) {
+						case SDLK_5:
+							KeyDown(KEY_COIN); break;
+						case SDLK_a:
+							KeyDown(KEY_LEFT); break;
+						case SDLK_d:
+							KeyDown(KEY_RIGHT); break;
+						case SDLK_u:
+							KeyDown(KEY_FIRE); break;
+						case SDLK_1:
+							KeyDown(KEY_START); break;
+						case SDLK_p:
+							KeyDown(KEY_PAUSE); break;
+						default:
+							break;
+					}
+					break;
+				case(SDL_KEYUP):
+					switch(e.key.keysym.sym) {
+						case SDLK_5:
+							KeyUp(KEY_COIN); break;
+						case SDLK_a:
+							KeyUp(KEY_LEFT); break;
+						case SDLK_d:
+							KeyUp(KEY_RIGHT); break;
+						case SDLK_u:
+							KeyUp(KEY_FIRE); break;
+						case SDLK_1:
+							KeyUp(KEY_START); break;
+						default:
+							break;
+					}
+					break;
+					
+			}
 		}
 
 		SDL_SetRenderDrawColor(renderer,0,0,0,255);

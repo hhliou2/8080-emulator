@@ -3,6 +3,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "Emulate8080.h"
 
 typedef struct ExtInstructions {
@@ -18,3 +19,5 @@ typedef struct ExtInstructions {
 State8080* InitMachine(void);
 ExtInstructions* InitExt(void);
 void CPUIncrement(State8080* state, ExtInstructions* ins);
+void KeyDown(uint8_t key);
+void KeyUp(uint8_t key);

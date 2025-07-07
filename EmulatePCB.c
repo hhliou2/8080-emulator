@@ -1,7 +1,18 @@
 #include "EmulatePCB.h"
 
+#define KEY_COIN 1
+#define KEY_LEFT 2
+#define KEY_RIGHT 3
+#define KEY_FIRE 4
+#define KEY_START 5
+#define KEY_PAUSE 6
+
 const double MICROSECONDS_PER_FRAME = (double) 1e6/60.0;
 const double MICROSECONDS_PER_HALF_FRAME = (double) 1e6/120.0;
+
+uint8_t in_port1 = 0;
+
+bool paused = 0;
 
 void ReadFileIntoMemoryAt(State8080* state, char* filename, uint32_t offset) {
         FILE *f = fopen(filename, "rb");
@@ -57,7 +68,7 @@ uint8_t MachineIn(uint8_t port, struct ExtInstructions* ins) {
 		case 0:
 			return 0x0e;
 		case 1:
-			return 0;
+			return in_port1;
 		case 3:
 			{
 				uint16_t v = (ins->shift1<<8) | ins->shift0;
@@ -82,8 +93,55 @@ void MachineOut(uint8_t port, uint8_t value, struct ExtInstructions* ins) {
 	}
 }
 
+//Key recognition
+void KeyDown (uint8_t key) {
+	switch(key) {
+		case KEY_COIN:
+			in_port1 |= 0x1;
+			break;
+		case KEY_LEFT:
+			in_port1 |= 0x20;
+			break;
+		case KEY_RIGHT:
+			in_port1 |= 0x40;
+			break;
+		case KEY_FIRE:
+			in_port1 |= 0x10;
+			break;
+		case KEY_START:
+			in_port1 |= 0x04;
+			break;
+		case KEY_PAUSE:
+			paused = !paused;
+			break;
+	}
+}
+
+void KeyUp (uint8_t key) {
+	switch(key) {
+		case KEY_COIN:
+			in_port1 &= ~0x1;
+			break;
+		case KEY_LEFT:
+			in_port1 &= ~0x20;
+			break;
+		case KEY_RIGHT:
+			in_port1 &= ~0x40;
+			break;
+		case KEY_FIRE:
+			in_port1 &= ~0x10;
+			break;
+		case KEY_START:
+			in_port1 &= ~0x04;
+			break;
+	}
+}
+
 // Get time elapsed, perform all opcodes that would have been executed in that time relative to 2MHz
 void CPUIncrement(State8080* state, ExtInstructions* ins) {
+	if (paused) {
+		return;
+	}
 	double now = GetPreciseTimeMicroseconds();
 
 	if (ins->lastTimer == 0.0) {
