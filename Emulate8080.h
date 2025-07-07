@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "Disassemble.h"
 
 // Data structure for each condition code found in 8080
 typedef struct ConditionCodes {
@@ -29,5 +30,5 @@ typedef struct State8080 {
 	uint8_t	int_enable;
 } State8080;
 
-int Emulate8080Op(State8080^ state);
+int Emulate8080Op(State8080* state);
 void Generate_Interrupt(State8080* state, int interrupt_num);

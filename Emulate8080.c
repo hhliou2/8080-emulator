@@ -1,5 +1,4 @@
 #include "Emulate8080.h"
-#include "Disassemble.h"
 
 // Error call for opcode
 void UnimplementedInstruction(State8080* state) {
@@ -574,6 +573,8 @@ void GenerateInterrupt(State8080* state, int interrupt_num) {
 	state->int_enable = 0;
 }
 
+/*
+
 State8080* Init8080(void) {
 	State8080* state = calloc(1, sizeof(State8080)); // allocate memory for State8080 struct
 	state->memory = malloc(0x10000); // allocate 16k bytes for state memory
@@ -613,3 +614,4 @@ int main(int argc, char**argv) {
 
 	return 0;
 }
+*/
