@@ -58,6 +58,38 @@ double GetPreciseTimeMicroseconds() {
 	return (double) ts.tv_sec * 1e6 +  (double) ts.tv_nsec/1e3;
 }
 
+// IN port handling
+uint8_t MachineIn(uint8_t port, struct ExtInstructions* ins) {
+	unsigned char a = 0;
+	switch(port) {
+		case 0:
+			return 1;
+		case 1:
+			return 0;
+		case 3:
+			{
+				uint16_t v = (ins->shift1<<8) | ins->shift0;
+				a = ((v >> (8-ins->shift_offset)) & 0xff);
+			}
+			break;
+	} 
+
+	return 0;
+}
+
+//OUT port handling
+void MachineOut(uint8_t port, uint8_t value, struct ExtInstructions* ins) {
+	switch(port) {
+		case 2:
+			ins->shift_offset = value & 0x7;
+			break;
+		case 4:
+			ins->shift0 = ins->shift1;
+			ins->shift1 = value;
+			break;
+	}
+}
+
 // Get time elapsed, perform all opcodes that would have been executed in that time relative to 2MHz
 void CPUIncrement(State8080* state, ExtInstructions* ins) {
 	double now = GetPreciseTimeMicroseconds();
