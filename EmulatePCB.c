@@ -44,8 +44,8 @@ State8080* InitMachine(void) {
 }
 
 void InitExt(struct ExtInstructions* ins) {
-	ins->lastTimer = 0;
-	ins->nextInterrupt = 16000;
+	ins->lastTimer = 0.0;
+	ins->nextInterrupt = 0.0;
 	ins->whichInterrupt = 1;
 }
 
@@ -58,6 +58,25 @@ double GetPreciseTimeMicroseconds() {
 // Get time elapsed, perform all opcodes that would have been executed in that time relative to 2MHz
 void CPUIncrement(State8080* state, ExtInstructions* ins) {
 	double now = GetPreciseTimeMicroseconds();
+
+	if (ins->lastTimer == 0.0) {
+		ins->lastTimer == now;
+		ins->nextInterrupt = ins->lastTimer + 16000.0;
+	}
+
+	// Interrupt handling
+	if ((state->int_enable) && (now > ins->nextInterrupt)) {
+		if (ins->whichInterrupt == 1) {
+			GenerateInterrupt(state, 1);
+			ins->whichInterrupt = 2;
+		} else {
+			GenerateInterrupt(state, 2);
+			ins->whichInterrupt = 1;
+		}
+		ins->nextInterrupt = now + 8000.0;
+	}
+
+	// Compute x CPU cycles for time elapsed
 	double timeElapsed = now - ins->lastTimer;
 	int cycles_needed = timeElapsed * 2; // Intel 8080 operates at 2MHz (10e6), so time in us (10e-6) converts nicely
 	int cycles = 0;
