@@ -1,6 +1,19 @@
-#include <stdlib.h>
+#define _POSIX_C_SOURCE 199309L
+#include <time.h>
 #include <sys/time.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "Emulate8080.h"
+
+typedef struct ExtInstructions {
+	double lastTimer;
+	double nextInterrupt;
+	double whichInterrupt;
+
+	uint8_t shift0;
+	uint8_t shift1;
+	uint8_t shift_offset;
+} ExtInstructions;
 
 void ReadFileIntoMemoryAt(State8080* state, char* filename, uint32_t offset) {
         FILE *f = fopen(filename, "rb");
@@ -26,16 +39,46 @@ State8080* InitMachine(void) {
 	ReadFileIntoMemoryAt(state, "invaders.g", 0x800);
 	ReadFileIntoMemoryAt(state, "invaders.f", 0x1000);
 	ReadFileIntoMemoryAt(state, "invaders.e", 0x1800);
+
         return state;
+}
+
+void InitExt(struct ExtInstructions* ins) {
+	ins->lastTimer = 0;
+	ins->nextInterrupt = 16000;
+	ins->whichInterrupt = 1;
+}
+
+double GetPreciseTimeMicroseconds() {
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return (double) ts.tv_sec * 1e6 +  (double) ts.tv_nsec/1e3;
+}
+
+// Get time elapsed, perform all opcodes that would have been executed in that time relative to 2MHz
+void CPUIncrement(State8080* state, ExtInstructions* ins) {
+	double now = GetPreciseTimeMicroseconds();
+	double timeElapsed = now - ins->lastTimer;
+	int cycles_needed = timeElapsed * 2; // Intel 8080 operates at 2MHz (10e6), so time in us (10e-6) converts nicely
+	int cycles = 0;
+
+	while (cycles < cycles_needed) {
+		cycles += Emulate8080Op(state);
+	}
+
+	ins->lastTimer = now;
 }
 
 int main(int argc, char**argv) {
 
         int done = 0;
+	struct ExtInstructions ins;
+
         State8080* state = InitMachine();
+	InitExt(&ins);
 
         while (done == 0) {
-                done = Emulate8080Op(state);
+                CPUIncrement(state, &ins);
         }
 
         return 0;
