@@ -507,6 +507,7 @@ int Emulate8080Op(State8080* state) {
 		case 0xda: 
 			   if (state->cc.cy != 0)
 				   state->pc = (opcode[2] << 8) | opcode[1];
+			   
 			   else
 			           state->pc = state->pc + 2;
 			   break;
