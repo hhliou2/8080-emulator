@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include "Emulate8080.h"
 
+const double MICROSECONDS_PER_FRAME = (double) 1e6/60.0;
+const double MICROSECONDS_PER_HALF_FRAME = (double) 1e6/120.0;
+
 typedef struct ExtInstructions {
 	double lastTimer;
 	double nextInterrupt;
@@ -61,7 +64,7 @@ void CPUIncrement(State8080* state, ExtInstructions* ins) {
 
 	if (ins->lastTimer == 0.0) {
 		ins->lastTimer == now;
-		ins->nextInterrupt = ins->lastTimer + 16000.0;
+		ins->nextInterrupt = ins->lastTimer + MICROSECONDS_PER_FRAME;
 	}
 
 	// Interrupt handling
@@ -73,7 +76,7 @@ void CPUIncrement(State8080* state, ExtInstructions* ins) {
 			GenerateInterrupt(state, 2);
 			ins->whichInterrupt = 1;
 		}
-		ins->nextInterrupt = now + 8000.0;
+		ins->nextInterrupt = now + MICROSECONDS_PER_HALF_FRAME;
 	}
 
 	// Compute x CPU cycles for time elapsed
