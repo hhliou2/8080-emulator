@@ -694,7 +694,17 @@ int Emulate8080Op(State8080* state) {
 			   state->sp = state->sp-2;
 			   break;
 			   }
-		case 0xf6: UnimplementedInstruction(state); break;
+		case 0xf6: 
+			   {
+			   uint8_t x = state->a | opcode[1];
+			   state->cc.z = flag_z(x);
+			   state->cc.s = flag_s(x);
+			   state->cc.p = flag_p(x);
+			   state->cc.cy = 0;
+			   state->a = x;
+			   state->pc++;
+			   }
+			   break;
 		case 0xf7: UnimplementedInstruction(state); break;
 		case 0xf8: UnimplementedInstruction(state); break;
 		case 0xf9: UnimplementedInstruction(state); break;
