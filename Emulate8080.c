@@ -53,7 +53,7 @@ uint8_t flag_p(int value) {
 
 // Space invaders RAM must be between 0x2000 and 0x4000
 static void writeMem(State8080* state, uint16_t address, uint8_t value) {
-	if (address >= 0x2000 && address <= 0x4000) {
+	if (address >= 0x2000 && address < 0x4000) {
 		state->memory[address] = value;
 	}
 }
@@ -653,7 +653,7 @@ int Emulate8080Op(State8080* state) {
 				   writeMem(state, state->sp-1, (ret>>8) & 0xff);
 				   writeMem(state, state->sp-2, (ret&0xff));
 				   state->sp = state->sp - 2;
-				   state->pc = opcode[2]<<8 + opcode[1];
+				   state->pc = opcode[2]<<8 | opcode[1];
 			   }
 			   else
 				   state->pc+=2;
@@ -733,7 +733,7 @@ int Emulate8080Op(State8080* state) {
 			   else
 			           state->pc = state->pc + 2;
 			   break;
-		case 0xd3: state->pc++;	break; //special??
+		case 0xd3: UnimplementedInstruction(state); break; //special??
 		case 0xd4: 
 			   {
 			   if (state->cc.cy == 0) {
@@ -774,7 +774,7 @@ int Emulate8080Op(State8080* state) {
 			   else
 			           state->pc = state->pc + 2;
 			   break;
-		case 0xdb: state->pc++; break;
+		case 0xdb: UnimplementedInstruction(state); break;
 		case 0xdc: UnimplementedInstruction(state); break;
 		case 0xdd: UnimplementedInstruction(state); break;
 		case 0xde: 
@@ -915,10 +915,6 @@ int Emulate8080Op(State8080* state) {
 
 	// Print current state for debugging
 	#ifdef DEBUG
-	if (*opcode == 0x3a || *opcode == 0xc2 || *opcode == 0xa7) {
-		return cycles8080[*opcode];
-	}
-	printf("%02x", *opcode);
 	Disassemble8080Op(state->memory, state->pc);
 	printf("\t");
 	printf("State: ");

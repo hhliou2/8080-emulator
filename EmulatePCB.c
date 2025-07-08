@@ -66,9 +66,14 @@ uint8_t MachineIn(uint8_t port, struct ExtInstructions* ins) {
 	unsigned char a = 0;
 	switch(port) {
 		case 0:
-			return 0x0e;
+			return 0x0f;
+			break;
 		case 1:
 			return in_port1;
+			break;
+		case 2:
+			return 0;
+			break;
 		case 3:
 			{
 				uint16_t v = (ins->shift1<<8) | ins->shift0;
@@ -172,12 +177,12 @@ void CPUIncrement(State8080* state, ExtInstructions* ins) {
 		if (*op == 0xdb) {
 		// Emulating machine IN
 			state->a = MachineIn(op[1], ins);
-			state->pc += 2;
+			state->pc = state->pc + 2;
 			cycles+=3;
 		} else if (*op == 0xd3) {
 		// Emulating machine OUT
 			MachineOut(op[1], state->a, ins);
-			state->pc += 2;
+			state->pc = state->pc + 2;
 			cycles+=3;
 		} else {
 			cycles += Emulate8080Op(state);
