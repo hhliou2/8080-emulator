@@ -82,7 +82,7 @@ uint8_t MachineIn(uint8_t port, struct ExtInstructions* ins) {
 			break;
 	} 
 
-	return 0;
+	return a;
 }
 
 //OUT port handling
