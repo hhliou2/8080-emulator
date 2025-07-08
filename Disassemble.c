@@ -11,8 +11,8 @@
 int Disassemble8080Op(unsigned char *codebuffer, int pc) {
 	unsigned char *code = &codebuffer[pc];
 	int opbytes = 1;
-	printf ("%04x ", pc); // Convert to hex, add leading 0s, make 4 digits.
-	printf ("%02x ", *code); 
+	//printf ("%04x ", pc); // Convert to hex, add leading 0s, make 4 digits.
+	//printf ("%02x ", *code); 
 	switch (*code) {
 		case 0x00: printf("NOP"); break;
 		case 0x01: printf("LXI	B,#$%02x%02x", code[2], code[1]); opbytes=3; break;
@@ -79,7 +79,7 @@ int Disassemble8080Op(unsigned char *codebuffer, int pc) {
 		case 0x38: printf("NOP"); break;
 
 		case 0x39: printf("DAD	SP"); break;
-		case 0x3a: printf("LDA	#$%02x%02x", code[2], code[1]); opbytes=3; break;
+		case 0x3a: break; //printf("LDA	#$%02x%02x", code[2], code[1]); opbytes=3; break;
 		case 0x3b: printf("DCX	SP"); break;
 		case 0x3c: printf("INR	A"); break;
 		case 0x3d: printf("DCR	A"); break;
@@ -203,7 +203,7 @@ int Disassemble8080Op(unsigned char *codebuffer, int pc) {
 		case 0xa4: printf("ANA	H"); break;
 		case 0xa5: printf("ANA	L"); break;
 		case 0xa6: printf("ANA	M"); break;
-		case 0xa7: printf("ANA	A"); break;
+		case 0xa7: break;//printf("ANA	A"); break;
 
 		case 0xa8: printf("XRA	B"); break;
 		case 0xa9: printf("XRA	C"); break;
@@ -235,7 +235,7 @@ int Disassemble8080Op(unsigned char *codebuffer, int pc) {
 		// Misc Commands
 		case 0xc0: printf("RNZ"); break;
 		case 0xc1: printf("POP	B"); break;
-		case 0xc2: printf("JNZ	#$%02x%02x", code[2], code[1]); opbytes=3; break;
+		case 0xc2: break;//printf("JNZ	#$%02x%02x", code[2], code[1]); opbytes=3; break;
 		case 0xc3: printf("JMP	#$%02x%02x", code[2], code[1]); opbytes=3; break;
 		case 0xc4: printf("CNZ	#$%02x%02x", code[2], code[1]); opbytes=3; break;
 		case 0xc5: printf("PUSH	B"); break;

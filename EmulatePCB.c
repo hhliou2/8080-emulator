@@ -173,12 +173,12 @@ void CPUIncrement(State8080* state, ExtInstructions* ins) {
 		// Emulating machine IN
 			state->a = MachineIn(op[1], ins);
 			state->pc += 2;
-			cycles+=10;
+			cycles+=3;
 		} else if (*op == 0xd3) {
 		// Emulating machine OUT
 			MachineOut(op[1], state->a, ins);
 			state->pc += 2;
-			cycles+=10;
+			cycles+=3;
 		} else {
 			cycles += Emulate8080Op(state);
 		}
