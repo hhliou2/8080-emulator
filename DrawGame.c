@@ -21,7 +21,7 @@ int main() {
 	SDL_Init(SDL_INIT_VIDEO);
 	bool running = true;
 
-	SDL_CreateWindowAndRenderer(256 * 4, 224 * 4, 0, &window, &renderer); //Space invaders screen output is 256x244
+	SDL_CreateWindowAndRenderer(224 * 4, 256 * 4, 0, &window, &renderer); //Space invaders screen output is 256x244
 	SDL_RenderSetScale(renderer, 4, 4);
 
 	while (running) {
@@ -75,13 +75,13 @@ int main() {
 		SDL_RenderClear(renderer);
 
 		SDL_SetRenderDrawColor(renderer,255,255,255,255);
-		for (int i=0; i<256; i+=8) {
-			for (int j=0; j<224; j++) {
-				unsigned char pixel = framebuffer[i/8 + j*(256/8)];
+		for (int i=0; i<224; i++) {
+			for (int j=0; j<256; j+=8) {
+				unsigned char pixel = framebuffer[j/8 + i*(256/8)];
 				//check each pixel value
 				for (int p=0; p<8; p++) {
 					if (pixel & (1<<p)) {
-						SDL_RenderDrawPoint(renderer, i+p, j);
+						SDL_RenderDrawPoint(renderer, i, 256-j-p);
 					}
 				}
 			}
